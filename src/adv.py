@@ -3,24 +3,24 @@ from player import Player
 # Declare all the rooms
 
 
-room = {'outside':  Room("Outside Cave Entrance", "North of you, the cave mount beckons"),
-        'foyer':    Room("Foyer", """Dim light filters in from the south. Dust, passages run north and east."""),
-        'overlook': Room("Grand Overlook", """A steep cliff appears before you, falling,into the darkness. Ahead to the north, a light flickers in the distance, but there is no way across the chasm."""),
-        'narrow':   Room("Narrow Passage", """The narrow passage bends here from west to north. The smell of gold permeates the air."""),
-        'treasure': Room("Treasure Chamber", """You've found the long-lost treasure chamber! Sadly, it has already been completely emptied by earlier adventurers. The only exit is to the south."""),
+room = {'outside':  Room("Outside Cave Entrance", "North of you, the cave mount beckons",["Sword","Shield"]),
+        'foyer':    Room("Foyer", """Dim light filters in from the south. Dust, passages run north and east.""",["Key"]),
+        'overlook': Room("Grand Overlook", """A steep cliff appears before you, falling,into the darkness. Ahead to the north, a light flickers in the distance, but there is no way across the chasm.""",[]),
+        'narrow':   Room("Narrow Passage", """The narrow passage bends here from west to north. The smell of gold permeates the air.""",[]),
+        'treasure': Room("Treasure Chamber", """You've found the long-lost treasure chamber! Sadly, it has already been completely emptied by earlier adventurers. The only exit is to the south.""",[]),
 }
 
 
 # Link rooms together
 
-room['outside'].n_to = room['foyer']
-room['foyer'].s_to = room['outside']
-room['foyer'].n_to = room['overlook']
-room['foyer'].e_to = room['narrow']
-room['overlook'].s_to = room['foyer']
-room['narrow'].w_to = room['foyer']
-room['narrow'].n_to = room['treasure']
-room['treasure'].s_to = room['narrow']
+room['outside'].N_to = room['foyer']
+room['foyer'].S_to = room['outside']
+room['foyer'].N_to = room['overlook']
+room['foyer'].E_to = room['narrow']
+room['overlook'].S_to = room['foyer']
+room['narrow'].W_to = room['foyer']
+room['narrow'].N_to = room['treasure']
+room['treasure'].S_to = room['narrow']
 
 #
 # Main
@@ -31,7 +31,8 @@ user_name = input("What is your name? ")
 
 #user starts outside
 location = "outside"
-user = Player(room[location],user_name)
+starting_inventory = []
+user = Player(room[location],user_name,starting_inventory)
 
 # Write a loop that:
 #
@@ -45,40 +46,31 @@ user = Player(room[location],user_name)
 # If the user enters "q", quit the game.
 
 game_on = 1
-prompt = "Where do you wish to go? Valid Inputs: N W E S (type 'q' to quit)"
+prompt = "Where do you wish to go? Valid Movement Inputs: [N W E S], take (item), drop (item), q (to quit)"
 intro = True
 
 while game_on:
     if intro:
         print("Welcome to Rob Quest!")
         intro = False
-    print("You are in: ", user.location.name)
-    print("You see: ", user.location.description)
-    path = input(prompt)
-    if path == "q":
+        user.look()
+    cmd = input(prompt)
+    if cmd in ["N","S","E","W"]:
+        user.move(cmd)
+        user.look()
+    elif cmd.startswith("take"):
+        item = cmd.split(" ")[1]
+        #import pdb; pdb.set_trace()
+        user.take(item)
+    elif cmd.startswith("drop"):
+        item = cmd.split(" ")[1]
+        user.drop(item)
+    elif cmd == "q":
         game_on = False
-    if path == "N":
-        if hasattr(user.location, 'n_to'):
-            user.location = user.location.n_to
-        else:
-            print("You can't go that way!")
-    if path == "S":
-        if hasattr(user.location, 's_to'):
-            user.location = user.location.s_to
-        else:
-            print("You can't go that way!")
-    if path == "E":
-        import pdb; pdb.set_trace()
-        if hasattr(user.location, 'e_to'):
-            user.location = user.location.e_to
-        else:
-            print("You can't go that way!")
-    if path == "W":
-        if hasattr(user.location, 'w_to'):
-            user.location = user.location.w_to
-        else:
-            print("You can't go that way!")
+        print("Goodbye!")
+    elif cmd == "inventory":
+        print("You have:" + str(user.inventory))
     else:
-        print("That is not a direction!")
+        print("That is not a valid action!")
     
 
